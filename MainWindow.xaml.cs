@@ -93,11 +93,11 @@ namespace Comtrade
         {
             var tokens = line.Split(',');
 
-            if (tokens[0].Length<1 || tokens[1].Length < 1 || tokens[2].Length < 1)
-            {
-                MessageBox.Show("Error: Invalid file format. Extract Revised Year");
-                Application.Current.Shutdown();
-            }
+            //if (tokens[0].Length<1 || tokens[1].Length < 1 || tokens[2].Length < 1)
+            //{
+            //    MessageBox.Show("Error: Invalid file format. Extract Revised Year");
+            //    Application.Current.Shutdown();
+            //}
             if (tokens[0].Length>64 || tokens[1].Length > 64)
             {
                 MessageBox.Show("Error: Invalid file format.more than expected characters");
@@ -383,6 +383,7 @@ namespace Comtrade
 
         static void AsciiDat(string line, int Analogcount, int DigitalCount)
         {
+            MessageBox.Show("Ascii Started");   
             string connectionString = "Data Source=SANAL-PROEDISON\\SQLEXPRESS;Initial Catalog=Demo;User ID=sa;Password=mypassword;Encrypt=False;";
             int k = 0;
             string[] values = line.Split(',');
@@ -758,9 +759,8 @@ namespace Comtrade
         // Handle "Process File" button click
         private void btnProcessFile_Click(object sender, RoutedEventArgs e)
         {
-            Stopwatch stopwatch = new Stopwatch();
-            stopwatch.Start();
-
+            MessageBox.Show(filePath);
+           
             // Check if a file has been selected
             if (string.IsNullOrEmpty(filePath))
             {
@@ -816,12 +816,12 @@ namespace Comtrade
 
                 if (string.Equals(fileExtension, ".dat", StringComparison.OrdinalIgnoreCase))
                 {
-                    Stopwatch watch = new Stopwatch();
+                  MessageBox.Show("Enter to dat");
 
-                    // Start the stopwatch
-                    watch.Start();
                     if ((string.Equals(Comtrade.DataType, "ASCII", StringComparison.OrdinalIgnoreCase)))
+
                     {
+                        MessageBox.Show("Enter to ascii");
                         using (StreamReader reader = new StreamReader(filePath))
                         {
                             string lineDat;
@@ -831,12 +831,8 @@ namespace Comtrade
                                 AsciiDat(lineDat, Comtrade1.AnalogSignalCount, Comtrade1.DigitalSignalCount);
                             }
                         }
-                        watch.Stop();
-                        TimeSpan ts = watch.Elapsed;
-                        string elapseddTime = String.Format("{0:00}:{1:00}:{2:00}.{3:00}",
-            ts.Hours, ts.Minutes, ts.Seconds,
-            ts.Milliseconds / 10);
-                        MessageBox.Show(elapseddTime);
+
+                        MessageBox.Show("Ascii Completed");
 
                     }
 
@@ -1047,17 +1043,8 @@ namespace Comtrade
                         }
 
                         // Commit the transaction
-                        transaction.Commit();
-                        stopwatch.Stop();
-
-                        // Get the elapsed time as a TimeSpan value
-                        TimeSpan ts = stopwatch.Elapsed;
-
-                        // Format the TimeSpan value into a string
-                        string elapsedTime = String.Format("{0:00}:{1:00}:{2:00}.{3:00}",
-                            ts.Hours, ts.Minutes, ts.Seconds,
-                            ts.Milliseconds / 10);
-                        MessageBox.Show(elapsedTime);
+                        
+                        MessageBox.Show("Completed");
                     }
                 }
 
