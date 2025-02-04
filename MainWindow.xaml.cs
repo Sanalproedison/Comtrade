@@ -397,23 +397,23 @@ namespace Comtrade
 
 
                     }
-                    for (int i = 2 + Comtrade1.AnalogSignalCount; i < intValues.Length; i++)
-                    {
+                    //for (int i = 2 + Comtrade1.AnalogSignalCount; i < intValues.Length; i++)
+                    //{
 
-                        using (SqlCommand cmdDigitalDat = new SqlCommand(query5, con, transaction))
-                        {
-                            cmdDigitalDat.Parameters.AddWithValue("@ComtradeIndex", ComtradeIndex);
-                            cmdDigitalDat.Parameters.AddWithValue("@DigitalIndex", Digital[k].ChannelNumber);
-                            cmdDigitalDat.Parameters.AddWithValue("@DatIndex", intValues[0]);
-                            cmdDigitalDat.Parameters.AddWithValue("@Time", intValues[1]);
-                            cmdDigitalDat.Parameters.AddWithValue("@Value", intValues[i]);
+                    //    using (SqlCommand cmdDigitalDat = new SqlCommand(query5, con, transaction))
+                    //    {
+                    //        cmdDigitalDat.Parameters.AddWithValue("@ComtradeIndex", ComtradeIndex);
+                    //        cmdDigitalDat.Parameters.AddWithValue("@DigitalIndex", Digital[k].ChannelNumber);
+                    //        cmdDigitalDat.Parameters.AddWithValue("@DatIndex", intValues[0]);
+                    //        cmdDigitalDat.Parameters.AddWithValue("@Time", intValues[1]);
+                    //        cmdDigitalDat.Parameters.AddWithValue("@Value", intValues[i]);
 
 
-                            cmdDigitalDat.ExecuteNonQuery();
+                    //        cmdDigitalDat.ExecuteNonQuery();
 
-                        }
-                        k++;
-                    }
+                    //    }
+                    //    k++;
+                    //}
                     transaction.Commit();
                 }
             }
@@ -778,9 +778,7 @@ namespace Comtrade
             {
                 MessageBox.Show("Dat file started");
                 if (string.Equals(Comtrade.DataType, "ASCII", StringComparison.OrdinalIgnoreCase))
-
                 {
-                   
                     using (StreamReader reader = new StreamReader(filePath))
                     {
                         string lineDat;
@@ -790,7 +788,7 @@ namespace Comtrade
                             AsciiDat(lineDat, Comtrade1.AnalogSignalCount, Comtrade1.DigitalSignalCount);
                         }
                     }
-                  
+                    MessageBox.Show("Ascii Completed");
                 }
                 else if (string.Equals(Comtrade.DataType, "BINARY", StringComparison.OrdinalIgnoreCase))
                 {
@@ -883,6 +881,9 @@ namespace Comtrade
                 {
                     MessageBox.Show($"Unknown data type: {Comtrade.DataType}");
                 }
+
+
+
 
 
             }
@@ -993,13 +994,17 @@ namespace Comtrade
                         }
 
                         // Commit the transaction
-
+                        transaction.Commit();
                         MessageBox.Show("Completed");
                     }
                 }
 
 
-                
+
+
+
+
+
             }
         }
     }
