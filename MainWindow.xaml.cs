@@ -2,13 +2,14 @@
 using System.IO;
 using System.Windows;
 using System.Windows.Controls;
-using Microsoft.Win32; // For OpenFileDialog
+using Microsoft.Win32;
 using System.Data.SqlClient;
 using System.Globalization;
 using System.Transactions;
 using System.Collections.Generic;
 using System.Text;
 using Azure;
+
 using System.Diagnostics;
 
 namespace Comtrade
@@ -74,10 +75,10 @@ namespace Comtrade
         }
 
         // Global Variables
-         public static ComtradeData Comtrade;
-       public static List<AnalogData> Analog = new List<AnalogData>();
+        public static ComtradeData Comtrade;
+        public static List<AnalogData> Analog = new List<AnalogData>();
         public static List<DigitalData> Digital = new List<DigitalData>();
-      public static ComtradeData1 Comtrade1;
+        public static ComtradeData1 Comtrade1;
         public static List<string> Words = new List<string>();
         private static int ComtradeIndex;
         private static List<int> valueArray = new List<int>();
@@ -98,7 +99,7 @@ namespace Comtrade
             //    MessageBox.Show("Error: Invalid file format. Extract Revised Year");
             //    Application.Current.Shutdown();
             //}
-            if (tokens[0].Length>64 || tokens[1].Length > 64)
+            if (tokens[0].Length > 64 || tokens[1].Length > 64)
             {
                 MessageBox.Show("Error: Invalid file format.more than expected characters");
                 Application.Current.Shutdown();
@@ -172,18 +173,19 @@ namespace Comtrade
             string time2 = words[6] + " " + words[7];
 
             Comtrade.TriggerTimeStamp = DateTime.Parse(time2);
-            if(Comtrade.TriggerTimeStamp < Comtrade.FirstTimeStamp)
+            if (Comtrade.TriggerTimeStamp < Comtrade.FirstTimeStamp)
             {
                 MessageBox.Show("Error: Trigger Time Stamp is less than First sample time");
                 Application.Current.Shutdown();
             }
 
             Comtrade.DataType = words[8];
-            //if(Comtrade.DataType != "ASCII" || Comtrade.DataType != "BINARY" || Comtrade.DataType != "BINARY32" || Comtrade.DataType != "FLOAT32")
-            //{
-            //    MessageBox.Show("Error: Invalid file format.Data Type");
-            //    Application.Current.Shutdown();
-            //}
+            MessageBox.Show(Comtrade.DataType);
+            if (Comtrade.DataType != "ASCII" && Comtrade.DataType != "BINARY" && Comtrade.DataType != "BINARY32" && Comtrade.DataType != "FLOAT32")
+            {
+                MessageBox.Show("Error: Invalid file format.Data Type");
+                Application.Current.Shutdown();
+            }
             Comtrade.TimeMultiplier = double.Parse(words[9]);
             Comtrade.TimeCode = words[10];
             Comtrade.LocalCode = words[11];
@@ -213,7 +215,8 @@ namespace Comtrade
                 Application.Current.Shutdown();
             }
 
-            if (tokens[1][tokens[1].Length - 1] != 'A' || tokens[2][tokens[2].Length - 1] != 'D') {
+            if (tokens[1][tokens[1].Length - 1] != 'A' || tokens[2][tokens[2].Length - 1] != 'D')
+            {
                 MessageBox.Show("Error:Invalid Character"); Application.Current.Shutdown();
             }
             if (tokens[1].Length > 2)
@@ -222,7 +225,7 @@ namespace Comtrade
             }
             else
             {
-                Comtrade1.AnalogSignalCount = int.Parse(tokens[1].Substring(0,1));
+                Comtrade1.AnalogSignalCount = int.Parse(tokens[1].Substring(0, 1));
             }
             if (tokens[2].Length > 2)
             {
@@ -241,43 +244,7 @@ namespace Comtrade
 
         }
 
-        // Parse and store analog data
-        //public static void ParseAndStoreAnalogData(string line)
-        //{
-        //    var tokens = line.Split(',');
-        //    if (tokens.Length != 13)
-        //    {
-        //        MessageBox.Show("Error: Invalid file format. Analog Signal");
-        //        Application.Current.Shutdown();
-        //    }
-        //    if (string.IsNullOrEmpty(tokens[0])) { MessageBox.Show("Error: Channel Index Number is empty"); Application.Current.Shutdown(); }
-        //    if (string.IsNullOrEmpty(tokens[1])) { MessageBox.Show("Error: Channel Identifier is empty"); Application.Current.Shutdown(); }
-        //    if (string.IsNullOrEmpty(tokens[4])) { MessageBox.Show("Error: Channel Units  is empty"); Application.Current.Shutdown(); }
-        //    if (string.IsNullOrEmpty(tokens[5])) { MessageBox.Show("Error: Channel Multiplier is empty"); Application.Current.Shutdown(); }
-        //    if (string.IsNullOrEmpty(tokens[6])) { MessageBox.Show("Error: Channel offset is empty"); Application.Current.Shutdown(); }
-        //    if (float.Parse(tokens[8]) > float.Parse(tokens[9])) { MessageBox.Show("Error: Channel offset is empty"); Application.Current.Shutdown(); }
-
-        //    if (string.IsNullOrEmpty(tokens[12])) { MessageBox.Show("Error: Channel type is empty"); Application.Current.Shutdown(); }
-
-        //    AnalogData analog = new AnalogData
-
-        //    {
-        //        ChannelIndexNumber = int.Parse(tokens[0]),
-        //        ChannelId = tokens[1],
-        //        PhaseId = tokens[2],
-        //        Ccbm = tokens[3],
-        //        ChannelUnits = tokens[4],
-        //        ChannelMultiplier = double.Parse(tokens[5]),
-        //        ChannelOffset = double.Parse(tokens[6]),
-        //        ChannelSkew = double.Parse(tokens[7]),
-        //        MinimumLimit = double.Parse(tokens[8]),
-        //        MaximumLimit = double.Parse(tokens[9]),
-        //        ChannelRatioPrimary = double.Parse(tokens[10]),
-        //        ChannelRatioSecondary = double.Parse(tokens[11]),
-        //        DataPrimarySecondary = tokens[12]
-        //    };
-        //    Analog.Add(analog);
-        //}
+        
 
 
         public static void ParseAndStoreAnalogData(string line)
@@ -294,50 +261,50 @@ namespace Comtrade
                 MessageBox.Show("Error"); Application.Current.Shutdown();
             }
 
-                if (tokens[1].Length > 128) { MessageBox.Show("Error"); Application.Current.Shutdown(); }
-                if (string.IsNullOrEmpty(tokens[1])) { MessageBox.Show("Error: Channel Identifier is empty"); Application.Current.Shutdown(); }
+            if (tokens[1].Length > 128) { MessageBox.Show("Error"); Application.Current.Shutdown(); }
+            if (string.IsNullOrEmpty(tokens[1])) { MessageBox.Show("Error: Channel Identifier is empty"); Application.Current.Shutdown(); }
 
-                if (string.IsNullOrEmpty(tokens[4])) { MessageBox.Show("Error: Channel Units  is empty"); Application.Current.Shutdown(); }
-                if (string.IsNullOrEmpty(tokens[5])) { MessageBox.Show("Error: Channel Multiplier is empty"); Application.Current.Shutdown(); }
-                if (string.IsNullOrEmpty(tokens[6])) { MessageBox.Show("Error: Channel offset is empty"); Application.Current.Shutdown(); }
+            if (string.IsNullOrEmpty(tokens[4])) { MessageBox.Show("Error: Channel Units  is empty"); Application.Current.Shutdown(); }
+            if (string.IsNullOrEmpty(tokens[5])) { MessageBox.Show("Error: Channel Multiplier is empty"); Application.Current.Shutdown(); }
+            if (string.IsNullOrEmpty(tokens[6])) { MessageBox.Show("Error: Channel offset is empty"); Application.Current.Shutdown(); }
             if (string.IsNullOrEmpty(tokens[7])) { MessageBox.Show("Error: Skew is empty"); Application.Current.Shutdown(); }
             if (float.Parse(tokens[8]) > float.Parse(tokens[9])) { MessageBox.Show("Error: Min is greater than max"); Application.Current.Shutdown(); }
-                if (string.IsNullOrEmpty(tokens[12])) { MessageBox.Show("Error: Channel type is empty"); Application.Current.Shutdown(); }
-            //if (tokens[12] != "s" || tokens[12] != "p" || tokens[12] != "P"|| tokens[12] != "S") { MessageBox.Show("Error: Channel type is not in correct format"); Application.Current.Shutdown(); }
+            if (string.IsNullOrEmpty(tokens[12])) { MessageBox.Show("Error: Channel type is empty"); Application.Current.Shutdown(); }
+            if (tokens[12] != "s" && tokens[12] != "p" && tokens[12] != "P" && tokens[12] != "S") { MessageBox.Show("Error: Channel type is not in correct format"); Application.Current.Shutdown(); }
 
             int channelIndexNumber = int.Parse(tokens[0]);
 
-                // Check for duplication or non-sequential ChannelIndexNumber
-                if (Analog.Any(a => a.ChannelIndexNumber == channelIndexNumber))
-                {
-                    MessageBox.Show("Error: Duplicate Channel Index Number");
-                    Application.Current.Shutdown();
-                }
-                if (Analog.Count > 0 && channelIndexNumber != Analog.Last().ChannelIndexNumber + 1)
-                {
-                    MessageBox.Show("Error: Non-sequential Channel Index Number");
-                    Application.Current.Shutdown();
-                }
-
-                AnalogData analog = new AnalogData
-                {
-                    ChannelIndexNumber = channelIndexNumber,
-                    ChannelId = tokens[1],
-                    PhaseId = tokens[2],
-                    Ccbm = tokens[3],
-                    ChannelUnits = tokens[4],
-                    ChannelMultiplier = double.Parse(tokens[5]),
-                    ChannelOffset = double.Parse(tokens[6]),
-                    ChannelSkew = double.Parse(tokens[7]),
-                    MinimumLimit = double.Parse(tokens[8]),
-                    MaximumLimit = double.Parse(tokens[9]),
-                    ChannelRatioPrimary = double.Parse(tokens[10]),
-                    ChannelRatioSecondary = double.Parse(tokens[11]),
-                    DataPrimarySecondary = tokens[12]
-                };
-                Analog.Add(analog);
+            // Check for duplication or non-sequential ChannelIndexNumber
+            if (Analog.Any(a => a.ChannelIndexNumber == channelIndexNumber))
+            {
+                MessageBox.Show("Error: Duplicate Channel Index Number");
+                Application.Current.Shutdown();
             }
-        
+            if (Analog.Count > 0 && channelIndexNumber != Analog.Last().ChannelIndexNumber + 1)
+            {
+                MessageBox.Show("Error: Non-sequential Channel Index Number");
+                Application.Current.Shutdown();
+            }
+
+            AnalogData analog = new AnalogData
+            {
+                ChannelIndexNumber = channelIndexNumber,
+                ChannelId = tokens[1],
+                PhaseId = tokens[2],
+                Ccbm = tokens[3],
+                ChannelUnits = tokens[4],
+                ChannelMultiplier = double.Parse(tokens[5]),
+                ChannelOffset = double.Parse(tokens[6]),
+                ChannelSkew = double.Parse(tokens[7]),
+                MinimumLimit = double.Parse(tokens[8]),
+                MaximumLimit = double.Parse(tokens[9]),
+                ChannelRatioPrimary = double.Parse(tokens[10]),
+                ChannelRatioSecondary = double.Parse(tokens[11]),
+                DataPrimarySecondary = tokens[12]
+            };
+            Analog.Add(analog);
+        }
+
 
 
         public static void ParseAndStoreDigitalData(string line)
@@ -383,7 +350,7 @@ namespace Comtrade
 
         static void AsciiDat(string line, int Analogcount, int DigitalCount)
         {
-            MessageBox.Show("Ascii Started");   
+
             string connectionString = "Data Source=SANAL-PROEDISON\\SQLEXPRESS;Initial Catalog=Demo;User ID=sa;Password=mypassword;Encrypt=False;";
             int k = 0;
             string[] values = line.Split(',');
@@ -739,7 +706,7 @@ namespace Comtrade
         // Handle "Choose File" button click
         private void btnChooseFile_Click(object sender, RoutedEventArgs e)
         {
-           
+
             // Open file dialog for selecting a file
             OpenFileDialog openFileDialog = new OpenFileDialog
             {
@@ -759,8 +726,7 @@ namespace Comtrade
         // Handle "Process File" button click
         private void btnProcessFile_Click(object sender, RoutedEventArgs e)
         {
-            MessageBox.Show(filePath);
-           
+            MessageBox.Show("Processing file...");
             // Check if a file has been selected
             if (string.IsNullOrEmpty(filePath))
             {
@@ -769,7 +735,6 @@ namespace Comtrade
             }
 
             var fileLines = File.ReadAllLines(filePath);
-
 
             int analogIndex = 0, digitalIndex = 0;
             if (string.Equals(fileExtension, ".cfg", StringComparison.OrdinalIgnoreCase))
@@ -784,157 +749,142 @@ namespace Comtrade
                         line = fileLines[1];
                         SignalCounting(line);
 
-
                         if (fileLines.Length != (11 + Comtrade1.AnalogSignalCount + Comtrade1.DigitalSignalCount))
                         {
                             string n = Convert.ToString(fileLines.Length);
-                            MessageBox.Show("Error: Invalid file format.Total lines");
+                            MessageBox.Show("Error: Invalid file format. Total lines");
                             Application.Current.Shutdown();
-
-
                         }
 
                         for (int i = 2; i < Comtrade1.AnalogSignalCount + 2; i++)
                         {
-
                             ParseAndStoreAnalogData(fileLines[i]);
                             analogIndex++;
                         }
                         for (int i = Comtrade1.AnalogSignalCount + 2; i < Comtrade1.DigitalSignalCount + Comtrade1.AnalogSignalCount + 2; i++)
                         {
                             ParseAndStoreDigitalData(fileLines[i]);
-
                         }
                         for (int i = Comtrade1.AnalogSignalCount + Comtrade1.DigitalSignalCount + 2; i < fileLines.Length; i++)
                         {
                             ComtradeParse(fileLines[i]);
-
                         }
                         ProcessWords(Words);
                     }
                 }
+            }
 
-                if (string.Equals(fileExtension, ".dat", StringComparison.OrdinalIgnoreCase))
+            if (string.Equals(fileExtension, ".dat", StringComparison.OrdinalIgnoreCase))
+            {
+                MessageBox.Show("Dat file started");
+                if (string.Equals(Comtrade.DataType, "ASCII", StringComparison.OrdinalIgnoreCase))
+
                 {
-                  MessageBox.Show("Enter to dat");
-
-                    if ((string.Equals(Comtrade.DataType, "ASCII", StringComparison.OrdinalIgnoreCase)))
-
+                   
+                    using (StreamReader reader = new StreamReader(filePath))
                     {
-                        MessageBox.Show("Enter to ascii");
-                        using (StreamReader reader = new StreamReader(filePath))
+                        string lineDat;
+                        while ((lineDat = reader.ReadLine()) != null)
                         {
-                            string lineDat;
-                            while ((lineDat = reader.ReadLine()) != null)
-                            {
-                                // Process each line
-                                AsciiDat(lineDat, Comtrade1.AnalogSignalCount, Comtrade1.DigitalSignalCount);
-                            }
+                            // Process each line
+                            AsciiDat(lineDat, Comtrade1.AnalogSignalCount, Comtrade1.DigitalSignalCount);
                         }
-
-                        MessageBox.Show("Ascii Completed");
-
                     }
-
-                    if ((string.Equals(Comtrade.DataType, "BINARY", StringComparison.OrdinalIgnoreCase)))
-                    {
-                        if (!File.Exists(filePath))
-                        {
-                            Console.WriteLine("Error: File does not exist.");
-                            return;
-                        }
-
-                        byte[] binaryData = File.ReadAllBytes(filePath);
-
-                        // Convert binary data to hexadecimal and store in an array
-                        string[] hexArray = new string[binaryData.Length];
-                        for (int i = 0; i < binaryData.Length; i++)
-                        {
-                            hexArray[i] = $"{binaryData[i]:X2}"; // Convert each byte to a 2-digit hex string
-                        }
-
-                        // Define chunk size (Based on number of analog signals)
-                        int chunkSize = 8 + (2 * Comtrade1.AnalogSignalCount) + (2 * (Comtrade1.DigitalSignalCount / 16));
-
-                        for (int i = 0; i < hexArray.Length; i += chunkSize)
-                        {
-                            int currentChunkSize = Math.Min(chunkSize, hexArray.Length - i);
-                            string[] currentChunk = new string[currentChunkSize];
-                            Array.Copy(hexArray, i, currentChunk, 0, currentChunkSize);
-
-                            // Call the processing function with the current chunk
-                            BinaryDat(currentChunk);
-                        }
-                        MessageBox.Show("Binary Completed");
-
-                    }
-
-
-                    if ((string.Equals(Comtrade.DataType, "BINARY32", StringComparison.OrdinalIgnoreCase)))
-                    {
-                        if (!File.Exists(filePath))
-                        {
-                            Console.WriteLine("Error: File does not exist.");
-                            return;
-                        }
-
-                        byte[] binaryData = File.ReadAllBytes(filePath);
-
-                        // Convert binary data to hexadecimal and store in an array
-                        string[] hexArray = new string[binaryData.Length];
-                        for (int i = 0; i < binaryData.Length; i++)
-                        {
-                            hexArray[i] = $"{binaryData[i]:X2}"; // Convert each byte to a 2-digit hex string
-                        }
-
-                        // Define chunk size (Based on number of analog signals)
-                        int chunkSize = 8 + (4 * Comtrade1.AnalogSignalCount) + (2 * (Comtrade1.DigitalSignalCount / 16));
-
-                        for (int i = 0; i < hexArray.Length; i += chunkSize)
-                        {
-                            int currentChunkSize = Math.Min(chunkSize, hexArray.Length - i);
-                            string[] currentChunk = new string[currentChunkSize];
-                            Array.Copy(hexArray, i, currentChunk, 0, currentChunkSize);
-
-                            // Call the processing function with the current chunk
-                            Binary32Dat(currentChunk);
-                        }
-                        MessageBox.Show("Binary32 Completed");
-
-                    }
-                    if ((string.Equals(Comtrade.DataType, "FLOAT32", StringComparison.OrdinalIgnoreCase)))
-                    {
-
-                        byte[] binaryData = File.ReadAllBytes(filePath);
-
-                        // Convert binary data to hexadecimal and store in an array
-                        string[] hexArray = new string[binaryData.Length];
-                        for (int i = 0; i < binaryData.Length; i++)
-                        {
-                            hexArray[i] = $"{binaryData[i]:X2}"; // Convert each byte to a 2-digit hex string
-                        }
-
-                        // Define chunk size (Based on number of analog signals)
-                        int chunkSize = 8 + (4 * Comtrade1.AnalogSignalCount) + (2 * (Comtrade1.DigitalSignalCount / 16));
-
-                        for (int i = 0; i < hexArray.Length; i += chunkSize)
-                        {
-                            int currentChunkSize = Math.Min(chunkSize, hexArray.Length - i);
-                            string[] currentChunk = new string[currentChunkSize];
-                            Array.Copy(hexArray, i, currentChunk, 0, currentChunkSize);
-
-                            // Call the processing function with the current chunk
-                            Float32(currentChunk);
-                        }
-                        MessageBox.Show("Float32 Completed");
-
-                    }
-
-
-
-
-
+                  
                 }
+                else if (string.Equals(Comtrade.DataType, "BINARY", StringComparison.OrdinalIgnoreCase))
+                {
+                    if (!File.Exists(filePath))
+                    {
+                        MessageBox.Show("Error: File does not exist.");
+                        return;
+                    }
+
+                    byte[] binaryData = File.ReadAllBytes(filePath);
+
+                    // Convert binary data to hexadecimal and store in an array
+                    string[] hexArray = new string[binaryData.Length];
+                    for (int i = 0; i < binaryData.Length; i++)
+                    {
+                        hexArray[i] = $"{binaryData[i]:X2}"; // Convert each byte to a 2-digit hex string
+                    }
+
+                    // Define chunk size (Based on number of analog signals)
+                    int chunkSize = 8 + (2 * Comtrade1.AnalogSignalCount) + (2 * (Comtrade1.DigitalSignalCount / 16));
+
+                    for (int i = 0; i < hexArray.Length; i += chunkSize)
+                    {
+                        int currentChunkSize = Math.Min(chunkSize, hexArray.Length - i);
+                        string[] currentChunk = new string[currentChunkSize];
+                        Array.Copy(hexArray, i, currentChunk, 0, currentChunkSize);
+
+                        // Call the processing function with the current chunk
+                        BinaryDat(currentChunk);
+                    }
+                    MessageBox.Show("Binary Completed");
+                }
+                else if (string.Equals(Comtrade.DataType, "BINARY32", StringComparison.OrdinalIgnoreCase))
+                {
+                    if (!File.Exists(filePath))
+                    {
+                        MessageBox.Show("Error: File does not exist.");
+                        return;
+                    }
+
+                    byte[] binaryData = File.ReadAllBytes(filePath);
+
+                    // Convert binary data to hexadecimal and store in an array
+                    string[] hexArray = new string[binaryData.Length];
+                    for (int i = 0; i < binaryData.Length; i++)
+                    {
+                        hexArray[i] = $"{binaryData[i]:X2}"; // Convert each byte to a 2-digit hex string
+                    }
+
+                    // Define chunk size (Based on number of analog signals)
+                    int chunkSize = 8 + (4 * Comtrade1.AnalogSignalCount) + (2 * (Comtrade1.DigitalSignalCount / 16));
+
+                    for (int i = 0; i < hexArray.Length; i += chunkSize)
+                    {
+                        int currentChunkSize = Math.Min(chunkSize, hexArray.Length - i);
+                        string[] currentChunk = new string[currentChunkSize];
+                        Array.Copy(hexArray, i, currentChunk, 0, currentChunkSize);
+
+                        // Call the processing function with the current chunk
+                        Binary32Dat(currentChunk);
+                    }
+                    MessageBox.Show("Binary32 Completed");
+                }
+                else if (string.Equals(Comtrade.DataType, "FLOAT32", StringComparison.OrdinalIgnoreCase))
+                {
+                    byte[] binaryData = File.ReadAllBytes(filePath);
+
+                    // Convert binary data to hexadecimal and store in an array
+                    string[] hexArray = new string[binaryData.Length];
+                    for (int i = 0; i < binaryData.Length; i++)
+                    {
+                        hexArray[i] = $"{binaryData[i]:X2}"; // Convert each byte to a 2-digit hex string
+                    }
+
+                    // Define chunk size (Based on number of analog signals)
+                    int chunkSize = 8 + (4 * Comtrade1.AnalogSignalCount) + (2 * (Comtrade1.DigitalSignalCount / 16));
+
+                    for (int i = 0; i < hexArray.Length; i += chunkSize)
+                    {
+                        int currentChunkSize = Math.Min(chunkSize, hexArray.Length - i);
+                        string[] currentChunk = new string[currentChunkSize];
+                        Array.Copy(hexArray, i, currentChunk, 0, currentChunkSize);
+
+                        // Call the processing function with the current chunk
+                        Float32(currentChunk);
+                    }
+                    MessageBox.Show("Float32 Completed");
+                }
+                else
+                {
+                    MessageBox.Show($"Unknown data type: {Comtrade.DataType}");
+                }
+
+
             }
 
             string connectionString = "Data Source=SANAL-PROEDISON\\SQLEXPRESS;Initial Catalog=Demo;User ID=sa;Password=mypassword;Encrypt=False;";
@@ -1043,44 +993,13 @@ namespace Comtrade
                         }
 
                         // Commit the transaction
-                        
+
                         MessageBox.Show("Completed");
                     }
                 }
 
 
-                //if (string.Equals(Comtrade.DataType, "BINARY", StringComparison.OrdinalIgnoreCase))
-                //{
-                //    MessageBox.Show("Insertion Started");
-
-                //    int k = 0;
-
-                //    for (int i = 0; i < timeArray.Count; i++)
-                //    {
-
-                //        for (int j = 0; j < Comtrade1.AnalogSignalCount; j++)
-                //        {
-
-
-
-                //            using (SqlCommand cmdAnalogDat = new SqlCommand(query4, con))
-                //            {
-                //                cmdAnalogDat.Parameters.AddWithValue("@ComtradeIndex", ComtradeIndex);
-                //                cmdAnalogDat.Parameters.AddWithValue("@ChannelIndex", Analog[j].ChannelIndexNumber);
-                //                cmdAnalogDat.Parameters.AddWithValue("@DatIndex", i);
-                //                cmdAnalogDat.Parameters.AddWithValue("@Time", timeArray[i]);
-                //                cmdAnalogDat.Parameters.AddWithValue("@Value", valueArray[k + j]);
-
-                //                cmdAnalogDat.ExecuteNonQuery();
-                //            }
-
-
-
-                //        }
-                //        k = k + Comtrade1.AnalogSignalCount;
-                //    }
-                // MessageBox.Show("Binary Completed");
-
+                
             }
         }
     }

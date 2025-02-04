@@ -1,11 +1,13 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
-VisualStudioVersion = 17.12.35521.163 d17.12
+VisualStudioVersion = 17.12.35521.163
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Comtrade", "Comtrade.csproj", "{8B5E0652-9F9B-48F0-8740-6086979935F2}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ComtradeTest", "..\ComtradeTest\ComtradeTest.csproj", "{7324DCB8-876F-4C6C-A102-F1C153CF09BB}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DatTest", "..\DatTest\DatTest.csproj", "{E35E440F-D766-46A5-B223-4F665AE271C9}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -21,6 +23,10 @@ Global
 		{7324DCB8-876F-4C6C-A102-F1C153CF09BB}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{7324DCB8-876F-4C6C-A102-F1C153CF09BB}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{7324DCB8-876F-4C6C-A102-F1C153CF09BB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E35E440F-D766-46A5-B223-4F665AE271C9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E35E440F-D766-46A5-B223-4F665AE271C9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E35E440F-D766-46A5-B223-4F665AE271C9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E35E440F-D766-46A5-B223-4F665AE271C9}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
