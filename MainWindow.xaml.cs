@@ -677,6 +677,7 @@ namespace Comtrade
 
 
 
+
      public static void Float32(string[] hexChunk)
         {
 
