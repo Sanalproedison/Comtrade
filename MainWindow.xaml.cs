@@ -19,7 +19,7 @@ namespace Comtrade
         private string filePath;
         private string fileName;
         private string fileExtension;
-
+        
         public struct AnalogData
         {
             public int ChannelIndexNumber;
@@ -80,10 +80,13 @@ namespace Comtrade
         public static List<DigitalData> Digital = new List<DigitalData>();
         public static ComtradeData1 Comtrade1;
         public static List<string> Words = new List<string>();
-        private static int ComtradeIndex;
+        public static int ComtradeIndex;
         private static List<int> valueArray = new List<int>();
-        private static List<int> timeArray = new List<int>();
-        private static List<int> datIndexArray = new List<int>();
+        public static List<int> timeArray = new List<int>();
+        public static List<int> datIndexArray = new List<int>();
+        public int[] intValues;
+
+
         public MainWindow()
         {
             InitializeComponent();
@@ -94,11 +97,11 @@ namespace Comtrade
         {
             var tokens = line.Split(',');
 
-            //if (tokens[0].Length<1 || tokens[1].Length < 1 || tokens[2].Length < 1)
-            //{
-            //    MessageBox.Show("Error: Invalid file format. Extract Revised Year");
-            //    Application.Current.Shutdown();
-            //}
+            if (tokens[0].Length < 1 || tokens[1].Length < 1 || tokens[2].Length < 1)
+            {
+                MessageBox.Show("Error: Invalid file format. Extract Revised Year");
+                Application.Current.Shutdown();
+            }
             if (tokens[0].Length > 64 || tokens[1].Length > 64)
             {
                 MessageBox.Show("Error: Invalid file format.more than expected characters");
@@ -113,11 +116,11 @@ namespace Comtrade
                 }
                 Comtrade.Station = tokens[0];
                 Comtrade.DeviceId = tokens[1];
-                //if(Comtrade.CfgVersion != 1999 || Comtrade.CfgVersion != 2013 || Comtrade.CfgVersion != 1991)
-                //{
-                //    MessageBox.Show("Error: Invalid file format. Comtrade Version");
-                //    Application.Current.Shutdown();
-                //}
+                if (Comtrade.CfgVersion != 1999 && Comtrade.CfgVersion != 2013 && Comtrade.CfgVersion != 1991)
+                {
+                    MessageBox.Show("Error: Invalid file format. Comtrade Version");
+                    Application.Current.Shutdown();
+                }
             }
             else
             {
@@ -335,7 +338,7 @@ namespace Comtrade
             if (string.IsNullOrEmpty(tokens[0])) { MessageBox.Show("Error: Channel Number is empty"); Application.Current.Shutdown(); }
             if (string.IsNullOrEmpty(tokens[1])) { MessageBox.Show("Error: Channel Identifier is empty"); Application.Current.Shutdown(); }
             if (string.IsNullOrEmpty(tokens[4])) { MessageBox.Show("Error:Normal state is empty"); Application.Current.Shutdown(); }
-            //if (tokens[4]!="0" || tokens[4]!="1"){ MessageBox.Show("Error: Normal State is not int correct formate"); Application.Current.Shutdown(); }
+            if (tokens[4]!="0" && tokens[4]!="1"){ MessageBox.Show("Error: Normal State is not int correct formate"); Application.Current.Shutdown(); }
             DigitalData digital = new DigitalData
             {
                 ChannelNumber = int.Parse(tokens[0]),
@@ -348,20 +351,49 @@ namespace Comtrade
 
         }
 
-        static void AsciiDat(string line, int Analogcount, int DigitalCount)
+        public static void AsciiDat(string line, int Analogcount, int DigitalCount)
         {
-
             string connectionString = "Data Source=SANAL-PROEDISON\\SQLEXPRESS;Initial Catalog=Demo;User ID=sa;Password=mypassword;Encrypt=False;";
             int k = 0;
             string[] values = line.Split(',');
             int[] intValues = Array.ConvertAll(values, s =>
             {
-                if (string.IsNullOrWhiteSpace(s))
+                if (values[0].Length == 0)
                 {
-                    return 0; // or handle it appropriately
+                    MessageBox.Show("Error: DatIndex is empty");
+                    Application.Current.Shutdown(); 
                 }
                 return int.Parse(s);
             });
+
+            if (datIndexArray.Count == 0)
+            {
+                datIndexArray.Add(intValues[0]);
+            }
+            else if (datIndexArray[datIndexArray.Count - 1] + 1 != intValues[0])
+            {
+                MessageBox.Show("Error: DatIndex must be sequential");
+                Application.Current.Shutdown();
+            }
+            else
+            {
+                datIndexArray.Add(intValues[0]);
+            }
+
+            if (timeArray.Count == 0)
+            {
+                timeArray.Add(intValues[1]);
+            }
+            else if (timeArray[timeArray.Count - 1] > intValues[1])
+            {
+                MessageBox.Show("Error: Time value must be greater than the previous values.");
+                Application.Current.Shutdown();
+            }
+            else
+            {
+                timeArray.Add(intValues[1]);
+            }
+
             string query4 = "INSERT INTO AnalogDat(ComtradeIndex,AnalogIndex,DatIndex,Time,Value,Result) VALUES (@ComtradeIndex,@AnalogIndex,@DatIndex,@Time,@Value,@Result)";
             string query5 = "INSERT INTO DigitalDat(ComtradeIndex,DigitalIndex,DatIndex,Time,Value) VALUES (@ComtradeIndex,@DigitalIndex,@DatIndex,@Time,@Value)";
             using (SqlConnection con = new SqlConnection(connectionString))
@@ -374,10 +406,8 @@ namespace Comtrade
                         double result = 0;
                         if (Analog[i - 2].DataPrimarySecondary.Equals("S"))
                         {
-
                             result = ((intValues[i] * Analog[i - 2].ChannelMultiplier) + Analog[i - 2].ChannelOffset) * Analog[i - 2].ChannelRatioPrimary;
                         }
-
                         else
                         {
                             result = (intValues[i] * Analog[i - 2].ChannelMultiplier) + Analog[i - 2].ChannelOffset;
@@ -391,43 +421,40 @@ namespace Comtrade
                             cmdAnalogDat.Parameters.AddWithValue("@Value", intValues[i]);
                             cmdAnalogDat.Parameters.AddWithValue("@Result", result);
 
-
                             cmdAnalogDat.ExecuteNonQuery();
                         }
-
-
                     }
-                    //for (int i = 2 + Comtrade1.AnalogSignalCount; i < intValues.Length; i++)
-                    //{
 
-                    //    using (SqlCommand cmdDigitalDat = new SqlCommand(query5, con, transaction))
-                    //    {
-                    //        cmdDigitalDat.Parameters.AddWithValue("@ComtradeIndex", ComtradeIndex);
-                    //        cmdDigitalDat.Parameters.AddWithValue("@DigitalIndex", Digital[k].ChannelNumber);
-                    //        cmdDigitalDat.Parameters.AddWithValue("@DatIndex", intValues[0]);
-                    //        cmdDigitalDat.Parameters.AddWithValue("@Time", intValues[1]);
-                    //        cmdDigitalDat.Parameters.AddWithValue("@Value", intValues[i]);
+                    // Uncomment and update the Digital data insertion logic if needed
+                    // for (int i = 2 + Comtrade1.AnalogSignalCount; i < intValues.Length; i++)
+                    // {
+                    //     using (SqlCommand cmdDigitalDat = new SqlCommand(query5, con, transaction))
+                    //     {
+                    //         cmdDigitalDat.Parameters.AddWithValue("@ComtradeIndex", ComtradeIndex);
+                    //         cmdDigitalDat.Parameters.AddWithValue("@DigitalIndex", Digital[k].ChannelNumber);
+                    //         cmdDigitalDat.Parameters.AddWithValue("@DatIndex", intValues[0]);
+                    //         cmdDigitalDat.Parameters.AddWithValue("@Time", intValues[1]);
+                    //         cmdDigitalDat.Parameters.AddWithValue("@Value", intValues[i]);
 
-
-                    //        cmdDigitalDat.ExecuteNonQuery();
-
-                    //    }
-                    //    k++;
-                    //}
+                    //         cmdDigitalDat.ExecuteNonQuery();
+                    //     }
+                    //     k++;
+                    // }
                     transaction.Commit();
                 }
             }
-
         }
-
-        static void BinaryDat(string[] hexChunk)
+        public static void BinaryDat(string[] hexChunk)
         {
             string connectionString = "Data Source=SANAL-PROEDISON\\SQLEXPRESS;Initial Catalog=Demo;User ID=sa;Password=mypassword;Encrypt=False;";
             string query4 = "INSERT INTO AnalogDat(ComtradeIndex,AnalogIndex,DatIndex,Time,Value,Result) VALUES (@ComtradeIndex,@AnalogIndex,@DatIndex,@Time,@Value,@Result)";
 
-
-
             string indexHex = hexChunk[3] + hexChunk[2] + hexChunk[1] + hexChunk[0];
+            if(indexHex.Length== 0)
+            {
+                MessageBox.Show("Error: Invalid file format. IndexHex");
+                Application.Current.Shutdown();
+            }
             string timeStampHex = hexChunk[7] + hexChunk[6] + hexChunk[5] + hexChunk[4];
             string statusBitsHex = hexChunk[hexChunk.Length - 1] + hexChunk[hexChunk.Length - 2];
 
@@ -436,14 +463,40 @@ namespace Comtrade
 
             int num = Convert.ToInt32(indexHex, 16);
             int num1 = Convert.ToInt32(timeStampHex, 16);
-            timeArray.Add(num1);
-            datIndexArray.Add(num);
+
+            if (datIndexArray.Count == 0)
+            {
+                datIndexArray.Add(num);
+            }
+            else if (datIndexArray[datIndexArray.Count - 1] + 1 != num)
+            {
+                MessageBox.Show("Error: DatIndex must be sequential");
+                Application.Current.Shutdown();
+            }
+            else
+            {
+                datIndexArray.Add(num);
+            }
+
+            if (timeArray.Count == 0)
+            {
+                timeArray.Add(num1);
+            }
+            else if (timeArray[timeArray.Count - 1] > num1)
+            {
+                MessageBox.Show("Error: Time value must be greater than the previous values.");
+                Application.Current.Shutdown();
+            }
+            else
+            {
+                timeArray.Add(num1);
+            }
+
             int k = 0;
             int ascii;
 
             for (int i = 8; i < hexChunk.Length - 2; i += 2)
             {
-
                 string x = hexChunk[i + 1] + hexChunk[i];
                 int decimalValue = Convert.ToInt32(x, 16);
 
@@ -468,24 +521,18 @@ namespace Comtrade
                 double result = 0;
                 if (Analog[k].DataPrimarySecondary.Equals("S"))
                 {
-
                     result = ((ascii * Analog[k].ChannelMultiplier) + Analog[k].ChannelOffset) * Analog[k].ChannelRatioPrimary;
                 }
-
                 else
                 {
                     result = (ascii * Analog[k].ChannelMultiplier) + Analog[k].ChannelOffset;
                 }
-
-
 
                 using (SqlConnection con = new SqlConnection(connectionString))
                 {
                     con.Open();
                     using (SqlTransaction transaction = con.BeginTransaction())
                     {
-
-
                         using (SqlCommand cmdAnalogDat = new SqlCommand(query4, con, transaction))
                         {
                             cmdAnalogDat.Parameters.AddWithValue("@ComtradeIndex", ComtradeIndex);
@@ -502,15 +549,9 @@ namespace Comtrade
                     }
                 }
                 k++;
-
-
-
-
-
             }
         }
-
-        static void Binary32Dat(string[] hexChunk)
+       public  static void Binary32Dat(string[] hexChunk)
         {
 
             string connectionString = "Data Source=SANAL-PROEDISON\\SQLEXPRESS;Initial Catalog=Demo;User ID=sa;Password=mypassword;Encrypt=False;";
@@ -518,6 +559,11 @@ namespace Comtrade
             int k = 0;
             int ascii;
             string indexHex = hexChunk[3] + hexChunk[2] + hexChunk[1] + hexChunk[0];
+            if (indexHex.Length == 0)
+            {
+                MessageBox.Show("Error: Invalid file format. IndexHex");
+                Application.Current.Shutdown();
+            }
             string timeStampHex = hexChunk[7] + hexChunk[6] + hexChunk[5] + hexChunk[4];
             string statusBitsHex = hexChunk[hexChunk.Length - 1] + hexChunk[hexChunk.Length - 2];
 
@@ -526,6 +572,34 @@ namespace Comtrade
 
             int num = Convert.ToInt32(indexHex, 16);
             int num1 = Convert.ToInt32(timeStampHex, 16);
+            if (datIndexArray.Count == 0)
+            {
+                datIndexArray.Add(num);
+            }
+            else if (datIndexArray[datIndexArray.Count - 1] + 1 != num)
+            {
+                MessageBox.Show("Error: DatIndex must be sequential");
+                Application.Current.Shutdown();
+            }
+            else
+            {
+                datIndexArray.Add(num);
+            }
+
+            if (timeArray.Count == 0)
+            {
+                timeArray.Add(num1);
+            }
+            else if (timeArray[timeArray.Count - 1] > num1)
+            {
+                MessageBox.Show("Error: Time value must be greater than the previous values.");
+                Application.Current.Shutdown();
+            }
+            else
+            {
+                timeArray.Add(num1);
+            }
+
 
 
             for (int i = 8; i < hexChunk.Length - 5; i += 4)
@@ -602,7 +676,7 @@ namespace Comtrade
         //Function for float32
 
 
-        static void Float32(string[] hexChunk)
+     public static void Float32(string[] hexChunk)
         {
 
             string connectionString = "Data Source=SANAL-PROEDISON\\SQLEXPRESS;Initial Catalog=Demo;User ID=sa;Password=mypassword;Encrypt=False;";
@@ -610,6 +684,12 @@ namespace Comtrade
 
             int k = 0;
             string indexHex = hexChunk[3] + hexChunk[2] + hexChunk[1] + hexChunk[0];
+            if (indexHex.Length == 0)
+            {
+                MessageBox.Show("Error: Invalid file format. IndexHex");
+                Application.Current.Shutdown();
+            }
+
             string timeStampHex = hexChunk[7] + hexChunk[6] + hexChunk[5] + hexChunk[4];
             string statusBitsHex = hexChunk[hexChunk.Length - 1] + hexChunk[hexChunk.Length - 2];
 
@@ -617,7 +697,36 @@ namespace Comtrade
             string statusBitsBin = Convert.ToString(num2, 2).PadLeft(16, '0');
 
             int num = Convert.ToInt32(indexHex, 16);
-            int num1 = Convert.ToInt32(timeStampHex, 16);
+            int num1 = Convert.ToInt32(timeStampHex, 16); 
+                if (datIndexArray.Count == 0)
+            {
+                datIndexArray.Add(num);
+            }
+            else if (datIndexArray[datIndexArray.Count - 1] + 1 != num)
+            {
+                MessageBox.Show("Error: DatIndex must be sequential");
+                Application.Current.Shutdown();
+            }
+            else
+            {
+                datIndexArray.Add(num);
+            }
+
+            if (timeArray.Count == 0)
+            {
+                timeArray.Add(num1);
+            }
+            else if (timeArray[timeArray.Count - 1] > num1)
+            {
+                MessageBox.Show("Error: Time value must be greater than the previous values.");
+                Application.Current.Shutdown();
+            }
+            else
+            {
+                timeArray.Add(num1);
+            }
+
+
 
 
             for (int i = 8; i < hexChunk.Length - 5; i += 4)
@@ -739,6 +848,7 @@ namespace Comtrade
             int analogIndex = 0, digitalIndex = 0;
             if (string.Equals(fileExtension, ".cfg", StringComparison.OrdinalIgnoreCase))
             {
+              
                 // Read and process lines
                 string line = fileLines[0];
                 if (line != null)
@@ -776,9 +886,21 @@ namespace Comtrade
 
             if (string.Equals(fileExtension, ".dat", StringComparison.OrdinalIgnoreCase))
             {
+                timeArray.Clear();
+                datIndexArray.Clear();
+
                 MessageBox.Show("Dat file started");
                 if (string.Equals(Comtrade.DataType, "ASCII", StringComparison.OrdinalIgnoreCase))
                 {
+                    timeArray.Clear();
+                    datIndexArray.Clear();
+
+                    var AsciiLines = File.ReadAllLines(filePath);
+                    if(AsciiLines.Length !=Comtrade.LastSampleRate)
+                    {
+                        MessageBox.Show("Error: Invalid file format. ASCII");
+                        Application.Current.Shutdown();
+                    }
                     using (StreamReader reader = new StreamReader(filePath))
                     {
                         string lineDat;
@@ -792,6 +914,9 @@ namespace Comtrade
                 }
                 else if (string.Equals(Comtrade.DataType, "BINARY", StringComparison.OrdinalIgnoreCase))
                 {
+                    timeArray.Clear();
+                    datIndexArray.Clear();
+
                     if (!File.Exists(filePath))
                     {
                         MessageBox.Show("Error: File does not exist.");
@@ -823,6 +948,8 @@ namespace Comtrade
                 }
                 else if (string.Equals(Comtrade.DataType, "BINARY32", StringComparison.OrdinalIgnoreCase))
                 {
+                    timeArray.Clear();
+                    datIndexArray.Clear();
                     if (!File.Exists(filePath))
                     {
                         MessageBox.Show("Error: File does not exist.");
@@ -854,6 +981,13 @@ namespace Comtrade
                 }
                 else if (string.Equals(Comtrade.DataType, "FLOAT32", StringComparison.OrdinalIgnoreCase))
                 {
+                    timeArray.Clear();
+                    datIndexArray.Clear();
+                    if (!File.Exists(filePath))
+                    {
+                        MessageBox.Show("Error: File does not exist.");
+                        return;
+                    }
                     byte[] binaryData = File.ReadAllBytes(filePath);
 
                     // Convert binary data to hexadecimal and store in an array

@@ -7,8 +7,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Comtrade", "Comtrade.csproj
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ComtradeTest", "..\ComtradeTest\ComtradeTest.csproj", "{7324DCB8-876F-4C6C-A102-F1C153CF09BB}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DatTest", "..\DatTest\DatTest.csproj", "{E35E440F-D766-46A5-B223-4F665AE271C9}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -23,10 +21,6 @@ Global
 		{7324DCB8-876F-4C6C-A102-F1C153CF09BB}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{7324DCB8-876F-4C6C-A102-F1C153CF09BB}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{7324DCB8-876F-4C6C-A102-F1C153CF09BB}.Release|Any CPU.Build.0 = Release|Any CPU
-		{E35E440F-D766-46A5-B223-4F665AE271C9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{E35E440F-D766-46A5-B223-4F665AE271C9}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{E35E440F-D766-46A5-B223-4F665AE271C9}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{E35E440F-D766-46A5-B223-4F665AE271C9}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
