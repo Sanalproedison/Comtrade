@@ -425,30 +425,30 @@ namespace Comtrade
                         }
                     }
 
-                    // Uncomment and update the Digital data insertion logic if needed
-                    // for (int i = 2 + Comtrade1.AnalogSignalCount; i < intValues.Length; i++)
-                    // {
-                    //     using (SqlCommand cmdDigitalDat = new SqlCommand(query5, con, transaction))
-                    //     {
-                    //         cmdDigitalDat.Parameters.AddWithValue("@ComtradeIndex", ComtradeIndex);
-                    //         cmdDigitalDat.Parameters.AddWithValue("@DigitalIndex", Digital[k].ChannelNumber);
-                    //         cmdDigitalDat.Parameters.AddWithValue("@DatIndex", intValues[0]);
-                    //         cmdDigitalDat.Parameters.AddWithValue("@Time", intValues[1]);
-                    //         cmdDigitalDat.Parameters.AddWithValue("@Value", intValues[i]);
+                   // Uncomment and update the Digital data insertion logic if needed
+                     for (int i = 2 + Comtrade1.AnalogSignalCount; i < intValues.Length; i++)
+                        {
+                            using (SqlCommand cmdDigitalDat = new SqlCommand(query5, con, transaction))
+                            {
+                                cmdDigitalDat.Parameters.AddWithValue("@ComtradeIndex", ComtradeIndex);
+                                cmdDigitalDat.Parameters.AddWithValue("@DigitalIndex", Digital[k].ChannelNumber);
+                                cmdDigitalDat.Parameters.AddWithValue("@DatIndex", intValues[0]);
+                                cmdDigitalDat.Parameters.AddWithValue("@Time", intValues[1]);
+                                cmdDigitalDat.Parameters.AddWithValue("@Value", intValues[i]);
 
-                    //         cmdDigitalDat.ExecuteNonQuery();
-                    //     }
-                    //     k++;
-                    // }
+                                cmdDigitalDat.ExecuteNonQuery();
+                            }
+                            k++;
+                        }
                     transaction.Commit();
                 }
             }
         }
-        public static void BinaryDat(string[] hexChunk)
+        public static void BinaryDat(string[] hexChunk,int AnalogCount,int DigitalCount)
         {
             string connectionString = "Data Source=SANAL-PROEDISON\\SQLEXPRESS;Initial Catalog=Demo;User ID=sa;Password=mypassword;Encrypt=False;";
             string query4 = "INSERT INTO AnalogDat(ComtradeIndex,AnalogIndex,DatIndex,Time,Value,Result) VALUES (@ComtradeIndex,@AnalogIndex,@DatIndex,@Time,@Value,@Result)";
-
+            string query5 = "INSERT INTO DigitalDat(ComtradeIndex,DigitalIndex,DatIndex,Time,Value) VALUES (@ComtradeIndex,@DigitalIndex,@DatIndex,@Time,@Value)";
             string indexHex = hexChunk[3] + hexChunk[2] + hexChunk[1] + hexChunk[0];
             if(indexHex.Length== 0)
             {
@@ -456,11 +456,7 @@ namespace Comtrade
                 Application.Current.Shutdown();
             }
             string timeStampHex = hexChunk[7] + hexChunk[6] + hexChunk[5] + hexChunk[4];
-            string statusBitsHex = hexChunk[hexChunk.Length - 1] + hexChunk[hexChunk.Length - 2];
-
-            int num2 = Convert.ToInt32(statusBitsHex, 16);
-            string statusBitsBin = Convert.ToString(num2, 2).PadLeft(16, '0');
-
+           
             int num = Convert.ToInt32(indexHex, 16);
             int num1 = Convert.ToInt32(timeStampHex, 16);
 
@@ -493,9 +489,10 @@ namespace Comtrade
             }
 
             int k = 0;
+            int d = 0;
             int ascii;
 
-            for (int i = 8; i < hexChunk.Length - 2; i += 2)
+            for (int i = 8; i < 8+(2*AnalogCount); i += 2)
             {
                 string x = hexChunk[i + 1] + hexChunk[i];
                 int decimalValue = Convert.ToInt32(x, 16);
@@ -546,17 +543,53 @@ namespace Comtrade
                         }
 
                         transaction.Commit();
+                        con.Close();
                     }
                 }
                 k++;
             }
+            for(int i=8+(2*AnalogCount); i<hexChunk.Length; i = i + 2)
+            {
+               
+                string statusBitsHex = hexChunk[i+1]+ hexChunk[i ];
+                int bits = Convert.ToInt32(statusBitsHex, 16);
+                string statusBitsBin = Convert.ToString(bits, 2).PadLeft(16, '0');
+              
+                for (int j=statusBitsBin.Length-1; j >=0; j--) {
+
+                    using (SqlConnection con = new SqlConnection(connectionString))
+                    {
+                        con.Open();
+                        using (SqlTransaction transaction = con.BeginTransaction())
+                        {
+                            using (SqlCommand cmdDigitalDat = new SqlCommand(query5, con, transaction))
+                            {
+                                cmdDigitalDat.Parameters.AddWithValue("@ComtradeIndex", ComtradeIndex);
+                                cmdDigitalDat.Parameters.AddWithValue("@DigitalIndex", Digital[d].ChannelNumber);
+                                cmdDigitalDat.Parameters.AddWithValue("@DatIndex", num);
+                                cmdDigitalDat.Parameters.AddWithValue("@Time", num1);
+                                cmdDigitalDat.Parameters.AddWithValue("@Value", statusBitsBin[j]);
+                                cmdDigitalDat.ExecuteNonQuery();
+                            }
+                            transaction.Commit();
+                            con.Close();
+                        }
+                    }
+                    d++;
+
+                }
+            }
+
+
         }
-       public  static void Binary32Dat(string[] hexChunk)
+        public static void Binary32Dat(string[] hexChunk, int AnalogCount, int DigitalCount)
         {
 
             string connectionString = "Data Source=SANAL-PROEDISON\\SQLEXPRESS;Initial Catalog=Demo;User ID=sa;Password=mypassword;Encrypt=False;";
             string query4 = "INSERT INTO AnalogDat(ComtradeIndex,AnalogIndex,DatIndex,Time,Value,Result) VALUES (@ComtradeIndex,@AnalogIndex,@DatIndex,@Time,@Value,@Result)";
+            string query5 = "INSERT INTO DigitalDat(ComtradeIndex,DigitalIndex,DatIndex,Time,Value) VALUES (@ComtradeIndex,@DigitalIndex,@DatIndex,@Time,@Value)";
             int k = 0;
+            int d = 0;
             int ascii;
             string indexHex = hexChunk[3] + hexChunk[2] + hexChunk[1] + hexChunk[0];
             if (indexHex.Length == 0)
@@ -565,10 +598,9 @@ namespace Comtrade
                 Application.Current.Shutdown();
             }
             string timeStampHex = hexChunk[7] + hexChunk[6] + hexChunk[5] + hexChunk[4];
-            string statusBitsHex = hexChunk[hexChunk.Length - 1] + hexChunk[hexChunk.Length - 2];
 
-            int num2 = Convert.ToInt32(statusBitsHex, 16);
-            string statusBitsBin = Convert.ToString(num2, 2).PadLeft(16, '0');
+
+
 
             int num = Convert.ToInt32(indexHex, 16);
             int num1 = Convert.ToInt32(timeStampHex, 16);
@@ -671,6 +703,40 @@ namespace Comtrade
 
 
             }
+
+            for (int i = 8 + (4* AnalogCount); i < hexChunk.Length; i = i + 2)
+            {
+
+                string statusBitsHex = hexChunk[i+1] + hexChunk[i];
+                int bits = Convert.ToInt32(statusBitsHex, 16);
+                string statusBitsBin = Convert.ToString(bits, 2).PadLeft(16, '0');
+                for (int j = statusBitsBin.Length-1; j >= 0; j--)
+                {
+
+                    using (SqlConnection con = new SqlConnection(connectionString))
+                    {
+                        con.Open();
+                        using (SqlTransaction transaction = con.BeginTransaction())
+                        {
+                            using (SqlCommand cmdDigitalDat = new SqlCommand(query5, con, transaction))
+                            {
+                                cmdDigitalDat.Parameters.AddWithValue("@ComtradeIndex", ComtradeIndex);
+                                cmdDigitalDat.Parameters.AddWithValue("@DigitalIndex", Digital[d].ChannelNumber);
+                                cmdDigitalDat.Parameters.AddWithValue("@DatIndex", num);
+                                cmdDigitalDat.Parameters.AddWithValue("@Time", num1);
+                                cmdDigitalDat.Parameters.AddWithValue("@Value", statusBitsBin[j]);
+                                cmdDigitalDat.ExecuteNonQuery();
+                            }
+                            transaction.Commit();
+                            con.Close();
+                        }
+                    }
+                    d++;
+
+                }
+
+
+            }
         }
 
         //Function for float32
@@ -678,13 +744,14 @@ namespace Comtrade
 
 
 
-     public static void Float32(string[] hexChunk)
+     public static void Float32(string[] hexChunk,int AnalogCount,int DigitalCount)
         {
 
             string connectionString = "Data Source=SANAL-PROEDISON\\SQLEXPRESS;Initial Catalog=Demo;User ID=sa;Password=mypassword;Encrypt=False;";
             string query4 = "INSERT INTO AnalogDat(ComtradeIndex,AnalogIndex,DatIndex,Time,Value,Result) VALUES (@ComtradeIndex,@AnalogIndex,@DatIndex,@Time,@Value,@Result)";
-
+            string query5 = "INSERT INTO DigitalDat(ComtradeIndex,DigitalIndex,DatIndex,Time,Value) VALUES (@ComtradeIndex,@DigitalIndex,@DatIndex,@Time,@Value)";
             int k = 0;
+            int d = 0;
             string indexHex = hexChunk[3] + hexChunk[2] + hexChunk[1] + hexChunk[0];
             if (indexHex.Length == 0)
             {
@@ -693,11 +760,7 @@ namespace Comtrade
             }
 
             string timeStampHex = hexChunk[7] + hexChunk[6] + hexChunk[5] + hexChunk[4];
-            string statusBitsHex = hexChunk[hexChunk.Length - 1] + hexChunk[hexChunk.Length - 2];
-
-            int num2 = Convert.ToInt32(statusBitsHex, 16);
-            string statusBitsBin = Convert.ToString(num2, 2).PadLeft(16, '0');
-
+            
             int num = Convert.ToInt32(indexHex, 16);
             int num1 = Convert.ToInt32(timeStampHex, 16); 
                 if (datIndexArray.Count == 0)
@@ -790,6 +853,42 @@ namespace Comtrade
 
 
             }
+            for (int i = 8 + (4 * AnalogCount); i < hexChunk.Length; i = i + 2)
+            {
+
+                string statusBitsHex = hexChunk[i + 1] + hexChunk[i];
+                int bits = Convert.ToInt32(statusBitsHex, 16);
+                string statusBitsBin = Convert.ToString(bits, 2).PadLeft(16, '0');
+                for (int j = statusBitsBin.Length - 1; j >= 0; j--)
+                {
+
+                    using (SqlConnection con = new SqlConnection(connectionString))
+                    {
+                        con.Open();
+                        using (SqlTransaction transaction = con.BeginTransaction())
+                        {
+                            using (SqlCommand cmdDigitalDat = new SqlCommand(query5, con, transaction))
+                            {
+                                cmdDigitalDat.Parameters.AddWithValue("@ComtradeIndex", ComtradeIndex);
+                                cmdDigitalDat.Parameters.AddWithValue("@DigitalIndex", Digital[d].ChannelNumber);
+                                cmdDigitalDat.Parameters.AddWithValue("@DatIndex", num);
+                                cmdDigitalDat.Parameters.AddWithValue("@Time", num1);
+                                cmdDigitalDat.Parameters.AddWithValue("@Value", statusBitsBin[j]);
+                                cmdDigitalDat.ExecuteNonQuery();
+                            }
+                            transaction.Commit();
+                            con.Close();
+                        }
+                    }
+                    d++;
+
+                }
+
+
+            }
+
+
+
         }
 
 
@@ -944,7 +1043,7 @@ namespace Comtrade
                         Array.Copy(hexArray, i, currentChunk, 0, currentChunkSize);
 
                         // Call the processing function with the current chunk
-                        BinaryDat(currentChunk);
+                        BinaryDat(currentChunk,Comtrade1.AnalogSignalCount,Comtrade1.DigitalSignalCount);
                     }
                     MessageBox.Show("Binary Completed");
                 }
@@ -977,7 +1076,7 @@ namespace Comtrade
                         Array.Copy(hexArray, i, currentChunk, 0, currentChunkSize);
 
                         // Call the processing function with the current chunk
-                        Binary32Dat(currentChunk);
+                        Binary32Dat(currentChunk,Comtrade1.AnalogSignalCount,Comtrade1.DigitalSignalCount);
                     }
                     MessageBox.Show("Binary32 Completed");
                 }
@@ -1009,7 +1108,7 @@ namespace Comtrade
                         Array.Copy(hexArray, i, currentChunk, 0, currentChunkSize);
 
                         // Call the processing function with the current chunk
-                        Float32(currentChunk);
+                        Float32(currentChunk,Comtrade1.AnalogSignalCount,Comtrade1.DigitalSignalCount);
                     }
                     MessageBox.Show("Float32 Completed");
                 }
