@@ -151,6 +151,11 @@ namespace Comtrade
                 }
                 Comtrade.Station = tokens[0];
                 Comtrade.DeviceId = tokens[1];
+
+            }
+            if (Comtrade.CfgVersion != 1999)
+            {
+                MessageBox.Show("Error:Invalid file"); Application.Current.Shutdown();
             }
 
         }
@@ -194,7 +199,7 @@ namespace Comtrade
                 MessageBox.Show("Error: Invalid file format. Comtrade Data");
                 Application.Current.Shutdown();
             }
-            if (string.IsNullOrEmpty(words[0])) { MessageBox.Show("Error: Line frequency is empty"); Application.Current.Shutdown(); }
+           
             if (string.IsNullOrEmpty(words[1])) { MessageBox.Show("Error: SampleRateCount is empty"); Application.Current.Shutdown(); }
             if (string.IsNullOrEmpty(words[2])) { MessageBox.Show("Error: Samplerate is empty"); Application.Current.Shutdown(); }
             if (string.IsNullOrEmpty(words[3])) { MessageBox.Show("Error: Last Sample rate is empty"); Application.Current.Shutdown(); }
@@ -220,7 +225,7 @@ namespace Comtrade
             }
 
             Comtrade.DataType = words[8];
-            MessageBox.Show(Comtrade.DataType);
+           
             if (Comtrade.DataType != "ASCII" && Comtrade.DataType != "BINARY" && Comtrade.DataType != "BINARY32" && Comtrade.DataType != "FLOAT32")
             {
                 MessageBox.Show("Error: Invalid file format.Data Type");
@@ -323,7 +328,7 @@ namespace Comtrade
             }
             else
             {
-                Comtrade1.DigitalSignalCount = int.Parse(tokens[2].Substring(0, 1));
+                Comtrade1.DigitalSignalCount = int.Parse(tokens[2].Substring(0,1));
 
             }
             if (Comtrade1.TotalSignalCount != (Comtrade1.AnalogSignalCount + Comtrade1.DigitalSignalCount))
@@ -350,6 +355,7 @@ namespace Comtrade
             {
                 MessageBox.Show("Error"); Application.Current.Shutdown();
             }
+         if (!int.TryParse(tokens[0], out int result)) { MessageBox.Show("Error: Channel Index Number is not in correct format"); Application.Current.Shutdown(); }
 
             if (tokens[1].Length > 128) { MessageBox.Show("Error"); Application.Current.Shutdown(); }
             if (string.IsNullOrEmpty(tokens[1])) { MessageBox.Show("Error: Channel Identifier is empty"); Application.Current.Shutdown(); }
@@ -411,6 +417,7 @@ namespace Comtrade
             {
                 MessageBox.Show("Error"); Application.Current.Shutdown();
             }
+            if (!int.TryParse(tokens[0], out int result)) { MessageBox.Show("Error: Channel Index Number is not in correct format"); Application.Current.Shutdown(); }
 
             if (tokens[1].Length > 128) { MessageBox.Show("Error"); Application.Current.Shutdown(); }
             if (string.IsNullOrEmpty(tokens[1])) { MessageBox.Show("Error: Channel Identifier is empty"); Application.Current.Shutdown(); }
@@ -418,8 +425,9 @@ namespace Comtrade
             if (string.IsNullOrEmpty(tokens[4])) { MessageBox.Show("Error: Channel Units  is empty"); Application.Current.Shutdown(); }
             if (string.IsNullOrEmpty(tokens[5])) { MessageBox.Show("Error: Channel Multiplier is empty"); Application.Current.Shutdown(); }
             if (string.IsNullOrEmpty(tokens[6])) { MessageBox.Show("Error: Channel offset is empty"); Application.Current.Shutdown(); }
-            if (string.IsNullOrEmpty(tokens[7])) { MessageBox.Show("Error: Skew is empty"); Application.Current.Shutdown(); }
-            if (float.Parse(tokens[8]) > float.Parse(tokens[9])) { MessageBox.Show("Error: Min is greater than max"); Application.Current.Shutdown(); }
+            if (string.IsNullOrEmpty(tokens[8])) { MessageBox.Show("Error: Invalid file format"); Application.Current.Shutdown(); }
+            if (string.IsNullOrEmpty(tokens[9])) { MessageBox.Show("Error: Invalid file format"); Application.Current.Shutdown(); }
+          //  if (float.Parse(tokens[8]) > float.Parse(tokens[9])) { MessageBox.Show("Error: Min is greater than max"); Application.Current.Shutdown(); }
             if (string.IsNullOrEmpty(tokens[12])) { MessageBox.Show("Error: Channel type is empty"); Application.Current.Shutdown(); }
             if (tokens[12] != "s" && tokens[12] != "p" && tokens[12] != "P" && tokens[12] != "S") { MessageBox.Show("Error: Channel type is not in correct format"); Application.Current.Shutdown(); }
 
@@ -513,6 +521,7 @@ namespace Comtrade
                 MessageBox.Show("Error: Invalid file format. Digital Signal");
                 Application.Current.Shutdown();
             }
+            if (!int.TryParse(tokens[0], out int result)) { MessageBox.Show("Error: Channel Index Number is not in correct format"); Application.Current.Shutdown(); }
 
             int channelIndexNumber = int.Parse(tokens[0]);
 
@@ -529,9 +538,9 @@ namespace Comtrade
             }
 
             if (string.IsNullOrEmpty(tokens[0])) { MessageBox.Show("Error: Channel Number is empty"); Application.Current.Shutdown(); }
-            if (string.IsNullOrEmpty(tokens[1])) { MessageBox.Show("Error: Channel Identifier is empty"); Application.Current.Shutdown(); }
+            
             if (string.IsNullOrEmpty(tokens[4])) { MessageBox.Show("Error:Normal state is empty"); Application.Current.Shutdown(); }
-            if (tokens[4] != "0" && tokens[4] != "1") { MessageBox.Show("Error: Normal State is not int correct formate"); Application.Current.Shutdown(); }
+            if (tokens[4] != "0" && tokens[4] != "1") { MessageBox.Show("Error: Normal State is not int correct format"); Application.Current.Shutdown(); }
             DigitalData digital = new DigitalData
             {
                 ChannelNumber = int.Parse(tokens[0]),
