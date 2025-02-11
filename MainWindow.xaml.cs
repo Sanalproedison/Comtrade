@@ -92,7 +92,7 @@ namespace Comtrade
             InitializeComponent();
         }
 
-        // Method to extract revised year from a line
+        // Method to extract revised year from a line 2013 cfg
         public static void ExtractRevisedYear(string line)
         {
             var tokens = line.Split(',');
@@ -131,7 +131,33 @@ namespace Comtrade
 
         }
 
-        // Method to parse a sentence into words
+        //Extracting first line of 1999 cfg
+        public static void ExtractRevisedYear1999(string line)
+        {
+            var tokens = line.Split(',');
+
+            
+            if (tokens[0].Length > 64 || tokens[1].Length > 64)
+            {
+                MessageBox.Show("Error: Invalid file format.more than expected characters");
+                Application.Current.Shutdown();
+            }
+            // Check if there are at least 3 tokens
+            if (tokens.Length > 2)
+            {
+                if (int.TryParse(tokens[2].Trim(), out int revisionYear))
+                {
+                    Comtrade.CfgVersion = revisionYear;
+                }
+                Comtrade.Station = tokens[0];
+                Comtrade.DeviceId = tokens[1];
+            }
+
+        }
+
+
+
+        // Method to parse a sentence into words 2013
         public static void ComtradeParse(string sentence)
         {
             string[] tokens = sentence.Split(',');
@@ -145,7 +171,68 @@ namespace Comtrade
             }
         }
 
-        // Process parsed words into ComtradeData
+        // Method to parse a sentence into words 1999
+        public static void ComtradeParse1999(string sentence)
+        {
+            string[] tokens = sentence.Split(',');
+            
+
+            foreach (var token in tokens)
+            {
+                if (Words.Count >= 10) return;
+                Words.Add(token);
+
+            }
+        }
+
+
+        // Process parsed words into ComtradeData 1999
+        public static void ProcessWords1999(List<string> words)
+        {
+            if (words.Count < 6 || words.Count>10)
+            {
+                MessageBox.Show("Error: Invalid file format. Comtrade Data");
+                Application.Current.Shutdown();
+            }
+            if (string.IsNullOrEmpty(words[0])) { MessageBox.Show("Error: Line frequency is empty"); Application.Current.Shutdown(); }
+            if (string.IsNullOrEmpty(words[1])) { MessageBox.Show("Error: SampleRateCount is empty"); Application.Current.Shutdown(); }
+            if (string.IsNullOrEmpty(words[2])) { MessageBox.Show("Error: Samplerate is empty"); Application.Current.Shutdown(); }
+            if (string.IsNullOrEmpty(words[3])) { MessageBox.Show("Error: Last Sample rate is empty"); Application.Current.Shutdown(); }
+            
+            if (string.IsNullOrEmpty(words[8])) { MessageBox.Show("Error:Data type is empty"); Application.Current.Shutdown(); }
+            if (string.IsNullOrEmpty(words[9])) { MessageBox.Show("Error: Time multiplier is empty"); Application.Current.Shutdown(); }
+            
+            if (int.Parse(words[0]) < 0) { MessageBox.Show("Error: Line frequency is negative"); Application.Current.Shutdown(); }
+            Comtrade.LineFrequency = float.Parse(words[0]);
+            Comtrade.SampleRateCount = int.Parse(words[1]);
+            Comtrade.SampleRate = float.Parse(words[2]);
+            Comtrade.LastSampleRate = int.Parse(words[3]);
+            string time1 = words[4] + " " + words[5];
+            Comtrade.FirstTimeStamp = DateTime.Parse(time1);
+
+            string time2 = words[6] + " " + words[7];
+
+            Comtrade.TriggerTimeStamp = DateTime.Parse(time2);
+            if (Comtrade.TriggerTimeStamp < Comtrade.FirstTimeStamp)
+            {
+                MessageBox.Show("Error: Trigger Time Stamp is less than First sample time");
+                Application.Current.Shutdown();
+            }
+
+            Comtrade.DataType = words[8];
+            MessageBox.Show(Comtrade.DataType);
+            if (Comtrade.DataType != "ASCII" && Comtrade.DataType != "BINARY" && Comtrade.DataType != "BINARY32" && Comtrade.DataType != "FLOAT32")
+            {
+                MessageBox.Show("Error: Invalid file format.Data Type");
+                Application.Current.Shutdown();
+            }
+            Comtrade.TimeMultiplier = double.Parse(words[9]);
+            
+        }
+
+
+
+        // Process parsed words into ComtradeData 2013
         public static void ProcessWords(List<string> words)
         {
             if (words.Count != 14)
@@ -196,7 +283,7 @@ namespace Comtrade
             Comtrade.LeapSecondIndicator = int.Parse(words[13]);
         }
 
-        // Count signals
+        // Count signals for both 2013 & 1999
         public static void SignalCounting(string sentence)
         {
             var tokens = sentence.Split(',');
@@ -249,7 +336,7 @@ namespace Comtrade
 
         
 
-
+        //for 2013 CFG
         public static void ParseAndStoreAnalogData(string line)
         {
             var tokens = line.Split(',');
@@ -309,6 +396,70 @@ namespace Comtrade
         }
 
 
+        //for 1999 cfg
+
+        public static void ParseAndStoreAnalogData1999(string line)
+        {
+            var tokens = line.Split(',');
+            if (tokens.Length != 13)
+            {
+                MessageBox.Show("Error: Invalid file format. Analog Signal");
+                Application.Current.Shutdown();
+            }
+            if (string.IsNullOrEmpty(tokens[0])) { MessageBox.Show("Error: Channel Index Number is empty"); Application.Current.Shutdown(); }
+            if (tokens[0].Length > 6)
+            {
+                MessageBox.Show("Error"); Application.Current.Shutdown();
+            }
+
+            if (tokens[1].Length > 128) { MessageBox.Show("Error"); Application.Current.Shutdown(); }
+            if (string.IsNullOrEmpty(tokens[1])) { MessageBox.Show("Error: Channel Identifier is empty"); Application.Current.Shutdown(); }
+
+            if (string.IsNullOrEmpty(tokens[4])) { MessageBox.Show("Error: Channel Units  is empty"); Application.Current.Shutdown(); }
+            if (string.IsNullOrEmpty(tokens[5])) { MessageBox.Show("Error: Channel Multiplier is empty"); Application.Current.Shutdown(); }
+            if (string.IsNullOrEmpty(tokens[6])) { MessageBox.Show("Error: Channel offset is empty"); Application.Current.Shutdown(); }
+            if (string.IsNullOrEmpty(tokens[7])) { MessageBox.Show("Error: Skew is empty"); Application.Current.Shutdown(); }
+            if (float.Parse(tokens[8]) > float.Parse(tokens[9])) { MessageBox.Show("Error: Min is greater than max"); Application.Current.Shutdown(); }
+            if (string.IsNullOrEmpty(tokens[12])) { MessageBox.Show("Error: Channel type is empty"); Application.Current.Shutdown(); }
+            if (tokens[12] != "s" && tokens[12] != "p" && tokens[12] != "P" && tokens[12] != "S") { MessageBox.Show("Error: Channel type is not in correct format"); Application.Current.Shutdown(); }
+
+            int channelIndexNumber = int.Parse(tokens[0]);
+
+            // Check for duplication or non-sequential ChannelIndexNumber
+            if (Analog.Any(a => a.ChannelIndexNumber == channelIndexNumber))
+            {
+                MessageBox.Show("Error: Duplicate Channel Index Number");
+                Application.Current.Shutdown();
+            }
+            if (Analog.Count > 0 && channelIndexNumber != Analog.Last().ChannelIndexNumber + 1)
+            {
+                MessageBox.Show("Error: Non-sequential Channel Index Number");
+                Application.Current.Shutdown();
+            }
+
+            AnalogData analog = new AnalogData
+            {
+                ChannelIndexNumber = channelIndexNumber,
+                ChannelId = tokens[1],
+                PhaseId = tokens[2],
+                Ccbm = tokens[3],
+                ChannelUnits = tokens[4],
+                ChannelMultiplier = double.Parse(tokens[5]),
+                ChannelOffset = double.Parse(tokens[6]),
+                ChannelSkew = double.Parse(tokens[7]),
+                MinimumLimit = double.Parse(tokens[8]),
+                MaximumLimit = double.Parse(tokens[9]),
+                ChannelRatioPrimary = double.Parse(tokens[10]),
+                ChannelRatioSecondary = double.Parse(tokens[11]),
+                DataPrimarySecondary = tokens[12]
+            };
+            Analog.Add(analog);
+        }
+
+
+
+
+
 
         public static void ParseAndStoreDigitalData(string line)
         {
@@ -350,6 +501,51 @@ namespace Comtrade
             Digital.Add(digital);
 
         }
+
+        //for 1999 cfg
+        public static void ParseAndStoreDigitalData1999(string line)
+        {
+            var tokens = line.Split(',');
+
+            // Check if there are enough tokens before processing
+            if (tokens.Length != 5)
+            {
+                MessageBox.Show("Error: Invalid file format. Digital Signal");
+                Application.Current.Shutdown();
+            }
+
+            int channelIndexNumber = int.Parse(tokens[0]);
+
+            // Check for duplication or non-sequential ChannelIndexNumber
+            if (Digital.Any(a => a.ChannelNumber == channelIndexNumber))
+            {
+                MessageBox.Show("Error: Duplicate Channel Index Number");
+                Application.Current.Shutdown();
+            }
+            if (Digital.Count > 0 && channelIndexNumber != Digital.Last().ChannelNumber + 1)
+            {
+                MessageBox.Show("Error: Non-sequential Channel Index Number");
+                Application.Current.Shutdown();
+            }
+
+            if (string.IsNullOrEmpty(tokens[0])) { MessageBox.Show("Error: Channel Number is empty"); Application.Current.Shutdown(); }
+            if (string.IsNullOrEmpty(tokens[1])) { MessageBox.Show("Error: Channel Identifier is empty"); Application.Current.Shutdown(); }
+            if (string.IsNullOrEmpty(tokens[4])) { MessageBox.Show("Error:Normal state is empty"); Application.Current.Shutdown(); }
+            if (tokens[4] != "0" && tokens[4] != "1") { MessageBox.Show("Error: Normal State is not int correct formate"); Application.Current.Shutdown(); }
+            DigitalData digital = new DigitalData
+            {
+                ChannelNumber = int.Parse(tokens[0]),
+                ChannelId = tokens[1],
+                PhaseId = tokens[2],
+                Ccbm = tokens[3],
+                NormalState = int.Parse(tokens[4])
+            };
+            Digital.Add(digital);
+
+        }
+
+
+
 
         public static void AsciiDat(string line, int Analogcount, int DigitalCount)
         {
@@ -949,14 +1145,18 @@ namespace Comtrade
             int analogIndex = 0, digitalIndex = 0;
             if (string.Equals(fileExtension, ".cfg", StringComparison.OrdinalIgnoreCase))
             {
-              
+                Words.Clear();
+
+
                 // Read and process lines
                 string line = fileLines[0];
-                if (line != null)
-                {
-                    ExtractRevisedYear(line);
-                    if (Comtrade.CfgVersion == 2013)
+                var tokens = line.Split(','); 
+                int year= int.Parse(tokens[2]);
+
+                
+                    if (year == 2013)
                     {
+                        ExtractRevisedYear(line);
                         line = fileLines[1];
                         SignalCounting(line);
 
@@ -982,14 +1182,40 @@ namespace Comtrade
                         }
                         ProcessWords(Words);
                     }
+
+                else
+                {
+
+                    ExtractRevisedYear1999(fileLines[0]);
+
+                    SignalCounting(fileLines[1]);
+
+                    for (int i = 2; i < Comtrade1.AnalogSignalCount + 2; i++)
+                    {
+                        ParseAndStoreAnalogData1999(fileLines[i]);
+                        analogIndex++;
+                    }
+
+                    for (int i = Comtrade1.AnalogSignalCount + 2; i < Comtrade1.DigitalSignalCount + Comtrade1.AnalogSignalCount + 2; i++)
+                    {
+                        ParseAndStoreDigitalData1999(fileLines[i]);
+                    }
+                    for (int i = Comtrade1.AnalogSignalCount + Comtrade1.DigitalSignalCount + 2; i < fileLines.Length; i++)
+                    {
+                        ComtradeParse1999(fileLines[i]);
+                    }
+                    ProcessWords1999(Words);
+
+
                 }
+
             }
 
             if (string.Equals(fileExtension, ".dat", StringComparison.OrdinalIgnoreCase))
             {
                 timeArray.Clear();
                 datIndexArray.Clear();
-
+               
                 MessageBox.Show("Dat file started");
                 if (string.Equals(Comtrade.DataType, "ASCII", StringComparison.OrdinalIgnoreCase))
                 {
@@ -1204,10 +1430,9 @@ namespace Comtrade
                         }
 
                         // Insert into CFG
+                        // Insert into CFG
                         using (SqlCommand cmdcfg = new SqlCommand(query3, con, transaction))
                         {
-
-
                             cmdcfg.Parameters.AddWithValue("@ComtradeIndex", ComtradeIndex);
                             cmdcfg.Parameters.AddWithValue("@Station", Comtrade.Station);
                             cmdcfg.Parameters.AddWithValue("@DeviceID", Comtrade.DeviceId);
@@ -1220,14 +1445,13 @@ namespace Comtrade
                             cmdcfg.Parameters.AddWithValue("@TriggerTime", Comtrade.TriggerTimeStamp);
                             cmdcfg.Parameters.AddWithValue("@DataType", Comtrade.DataType);
                             cmdcfg.Parameters.AddWithValue("@TimeMultiplier", Comtrade.TimeMultiplier);
-                            cmdcfg.Parameters.AddWithValue("@LocalTime", Comtrade.TimeCode);
-                            cmdcfg.Parameters.AddWithValue("@UTCTime", Comtrade.LocalCode);
-                            cmdcfg.Parameters.AddWithValue("@TimeQualityIndicatorCode", Comtrade.TimeQualityIndicatorCode);
-                            cmdcfg.Parameters.AddWithValue("@LeapSecond", Comtrade.LeapSecondIndicator);
+                            cmdcfg.Parameters.AddWithValue("@LocalTime", (object)Comtrade.TimeCode ?? DBNull.Value);
+                            cmdcfg.Parameters.AddWithValue("@UTCTime", (object)Comtrade.LocalCode ?? DBNull.Value);
+                            cmdcfg.Parameters.AddWithValue("@TimeQualityIndicatorCode", (object)Comtrade.TimeQualityIndicatorCode ?? DBNull.Value);
+                            cmdcfg.Parameters.AddWithValue("@LeapSecond", (object)Comtrade.LeapSecondIndicator ?? DBNull.Value);
 
                             cmdcfg.ExecuteNonQuery();
                         }
-
                         // Commit the transaction
                         transaction.Commit();
                         MessageBox.Show("Completed");
